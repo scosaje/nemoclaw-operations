@@ -1,0 +1,63 @@
+{
+  "_metadata": {
+    "description": "AnSA NemoClaw PoC - Pre-built Demo Scenario",
+    "classification": "FICTIONAL - DEMO DATA ONLY",
+    "generated": "2026-03-17T00:00:00Z",
+    "version": "1.0.0"
+  },
+  "scenario": {
+    "name": "Airport POI Detection",
+    "description": "Person of interest detected at Nnamdi Azikiwe International Airport",
+    "initial_prompt": "ALERT: Face detection system has flagged a potential match at Nnamdi Azikiwe International Airport, Terminal 1. Camera CAM-047 detected a face with 87% confidence matching a person on our watchlist at 14:23 hours today. Investigate this detection, verify the identity, and take appropriate action.",
+    "expected_tool_sequence": [
+      "query_camera_feeds",
+      "biometric_lookup",
+      "nimc_query",
+      "dispatch_alert"
+    ],
+    "expected_outcome": "High-severity alert dispatched with full evidence chain",
+    "linked_data": {
+      "primary_event": "EVT-001",
+      "secondary_event": "EVT-008",
+      "poi_record": "POI-2847",
+      "camera_id": "CAM-047",
+      "face_embedding_ref": "emb_2847",
+      "nin": "29384710256",
+      "location": "Nnamdi Azikiwe Intl Airport, Terminal 1"
+    },
+    "evidence_chain": [
+      {
+        "step": 1,
+        "action": "query_camera_feeds",
+        "description": "Retrieve detection events from CAM-047 at Nnamdi Azikiwe Intl Airport",
+        "expected_result": "EVT-001 returned with face_embedding_ref emb_2847, confidence 0.87. Secondary detection EVT-008 at 14:31 with confidence 0.92 confirms subject presence."
+      },
+      {
+        "step": 2,
+        "action": "biometric_lookup",
+        "description": "Match face embedding emb_2847 against persons of interest database",
+        "expected_result": "Match found: POI-2847 — Abubakar Musa Ibrahim, threat_level HIGH, linked to financial fraud network. NIN: 29384710256."
+      },
+      {
+        "step": 3,
+        "action": "nimc_query",
+        "description": "Query NIMC database with NIN 29384710256 for identity verification",
+        "expected_result": "Identity confirmed: Abubakar Musa Ibrahim, DOB 1989-06-14, resident of No. 7 Damboa Road, GRA, Maiduguri, Borno State. Photo reference available for visual confirmation."
+      },
+      {
+        "step": 4,
+        "action": "dispatch_alert",
+        "description": "Generate and dispatch high-severity alert to airport security and command centre",
+        "expected_result": "HIGH-severity alert dispatched. Airport security, FCT command centre, and aviation security notified. Subject last seen at boarding gate area. Flight manifest check initiated."
+      }
+    ],
+    "demo_talking_points": [
+      "Real-time face detection across distributed camera network",
+      "Automated cross-referencing against national watchlist database",
+      "NIMC integration for authoritative identity verification",
+      "Sub-10-second end-to-end detection-to-alert pipeline",
+      "Multi-camera tracking with confidence escalation (87% to 92%)",
+      "Complete evidence chain maintained for legal and operational use"
+    ]
+  }
+}

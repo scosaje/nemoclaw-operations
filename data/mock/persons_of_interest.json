@@ -1,0 +1,87 @@
+{
+  "_metadata": {
+    "description": "AnSA NemoClaw PoC - Persons of Interest Watchlist",
+    "classification": "FICTIONAL - DEMO DATA ONLY",
+    "generated": "2026-03-17T00:00:00Z",
+    "version": "1.0.0"
+  },
+  "persons_of_interest": [
+    {
+      "id": "POI-2847",
+      "name": "Abubakar Musa Ibrahim",
+      "nin": "29384710256",
+      "state_of_origin": "Borno",
+      "lga": "Maiduguri",
+      "threat_level": "HIGH",
+      "face_embedding_ref": "emb_2847",
+      "last_known_location": "Wuse Market, Abuja",
+      "notes": "Subject linked to financial fraud network operating across North-East region. Last flagged entering FCT via Abuja-Keffi Expressway on 2026-03-10. Known to use multiple aliases. Exercise caution during approach."
+    },
+    {
+      "id": "POI-1103",
+      "name": "Chinedu Okafor",
+      "nin": "50173826491",
+      "state_of_origin": "Anambra",
+      "lga": "Onitsha North",
+      "threat_level": "CRITICAL",
+      "face_embedding_ref": "emb_1103",
+      "last_known_location": "Murtala Muhammed International Airport, Lagos",
+      "notes": "Principal suspect in cross-border arms trafficking ring. Interpol Red Notice active. Believed to have connections with operatives in Cameroon and Niger Republic. Armed and dangerous — do not approach without tactical support."
+    },
+    {
+      "id": "POI-0456",
+      "name": "Fatima Bello Yusuf",
+      "nin": "71829304615",
+      "state_of_origin": "Kano",
+      "lga": "Nassarawa",
+      "threat_level": "MEDIUM",
+      "face_embedding_ref": "emb_0456",
+      "last_known_location": "Kano City Central Mosque area",
+      "notes": "Person of interest in cybercrime investigation. Suspected involvement in BEC (Business Email Compromise) syndicate targeting international corporations. No history of violence."
+    },
+    {
+      "id": "POI-3391",
+      "name": "Emeka Nnamdi Eze",
+      "nin": "38492017563",
+      "state_of_origin": "Enugu",
+      "lga": "Enugu East",
+      "threat_level": "LOW",
+      "face_embedding_ref": "emb_3391",
+      "last_known_location": "University of Nigeria, Nsukka campus",
+      "notes": "Associate of POI-1103. Believed to provide logistical support only. No direct involvement in violent activities confirmed. Under surveillance for information gathering."
+    },
+    {
+      "id": "POI-5720",
+      "name": "Halima Abdullahi Sani",
+      "nin": "64015928374",
+      "state_of_origin": "Kaduna",
+      "lga": "Zaria",
+      "threat_level": "HIGH",
+      "face_embedding_ref": "emb_5720",
+      "last_known_location": "Ahmadu Bello University, Zaria",
+      "notes": "Suspected of recruiting for extremist network through online platforms. Multiple social media accounts flagged. Known to travel frequently between Kaduna and Abuja. Surveillance priority."
+    },
+    {
+      "id": "POI-0089",
+      "name": "Oluwaseun Adeyemi",
+      "nin": "82716305948",
+      "state_of_origin": "Oyo",
+      "lga": "Ibadan North",
+      "threat_level": "MEDIUM",
+      "face_embedding_ref": "emb_0089",
+      "last_known_location": "Dugbe Market, Ibadan",
+      "notes": "Linked to counterfeit currency distribution ring operating in South-West region. Subject has prior convictions for forgery. Last spotted conducting transactions at Bodija Market on 2026-03-05."
+    },
+    {
+      "id": "POI-4162",
+      "name": "Musa Danjuma Lawal",
+      "nin": "15930274816",
+      "state_of_origin": "Plateau",
+      "lga": "Jos North",
+      "threat_level": "CRITICAL",
+      "face_embedding_ref": "emb_4162",
+      "last_known_location": "Jos Main Market area",
+      "notes": "Prime suspect in multiple kidnapping-for-ransom incidents along Abuja-Jos highway. Armed and extremely dangerous. Active warrant from FCT High Court. Reward offered for information leading to arrest."
+    }
+  ]
+}

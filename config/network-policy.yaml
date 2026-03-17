@@ -1,0 +1,40 @@
+# OpenShell Network Policy for AnSA Supervisor Agent
+# Enforces data sovereignty — only NVIDIA inference API is permitted
+
+apiVersion: openshell/v1
+kind: NetworkPolicy
+metadata:
+  name: ansa-assistant-network
+  description: "Strict egress policy enforcing Nigerian data sovereignty requirements"
+
+spec:
+  # Default deny all outbound traffic
+  egress:
+    default: deny
+
+    allow:
+      - host: "integrate.api.nvidia.com"
+        ports: [443]
+        protocol: TCP
+        reason: "Nemotron inference via NVIDIA API"
+        rate_limit: "100/min"
+
+      - host: "api.nvcf.nvidia.com"
+        ports: [443]
+        protocol: TCP
+        reason: "NVIDIA Cloud Functions (backup inference endpoint)"
+        rate_limit: "100/min"
+
+    deny:
+      - host: "*"
+        reason: "Block all other outbound — data sovereignty enforcement"
+
+  # DNS resolution restricted to allowed hosts only
+  dns:
+    allow:
+      - "integrate.api.nvidia.com"
+      - "api.nvcf.nvidia.com"
+
+  # No inbound connections permitted
+  ingress:
+    default: deny

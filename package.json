@@ -1,0 +1,24 @@
+{
+  "name": "ansa-nemoclaw-poc",
+  "version": "0.1.0",
+  "description": "AnSA (Autonomous National Security Architecture) - NemoClaw Proof of Concept. Supervisor Agent with simulated surveillance tools running in OpenShell sandbox.",
+  "author": "Inspired Technologies Limited",
+  "license": "UNLICENSED",
+  "private": true,
+  "keywords": [
+    "ansa",
+    "nemoclaw",
+    "openshell",
+    "nvidia",
+    "surveillance",
+    "security",
+    "agent"
+  ],
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "demo": "bash scripts/demo.sh"
+  }
+}

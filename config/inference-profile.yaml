@@ -1,0 +1,29 @@
+# NVIDIA Inference Profile for AnSA Supervisor Agent
+# Configures Nemotron model access via NVIDIA API
+
+provider: nvidia-api
+endpoint: "https://integrate.api.nvidia.com/v1"
+model: "nemotron-3-super:120b"
+api_key_env: "NVIDIA_API_KEY"
+
+# Model parameters tuned for security operations
+parameters:
+  temperature: 0.3          # Low temperature — deterministic for security decisions
+  max_tokens: 2048          # Sufficient for detailed investigation responses
+  top_p: 0.9                # Nucleus sampling
+  frequency_penalty: 0.1    # Slight penalty to reduce repetition
+  presence_penalty: 0.0     # No presence penalty needed
+
+# Retry and timeout configuration
+reliability:
+  timeout_seconds: 30
+  max_retries: 3
+  retry_delay_seconds: 2
+  backoff_multiplier: 2.0
+
+# Usage tracking
+monitoring:
+  log_prompts: false         # Do not log prompts (security data)
+  log_responses: false       # Do not log responses (security data)
+  log_token_usage: true      # Track token consumption
+  log_latency: true          # Track inference latency

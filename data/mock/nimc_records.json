@@ -1,0 +1,141 @@
+{
+  "_metadata": {
+    "description": "AnSA NemoClaw PoC - NIMC Identity Records (Simulated)",
+    "classification": "FICTIONAL - DEMO DATA ONLY",
+    "generated": "2026-03-17T00:00:00Z",
+    "version": "1.0.0",
+    "notice": "These records simulate NIMC NIN database responses. All data is entirely fictional."
+  },
+  "records": [
+    {
+      "nin": "29384710256",
+      "surname": "Ibrahim",
+      "first_name": "Abubakar",
+      "middle_name": "Musa",
+      "dob": "1989-06-14",
+      "gender": "Male",
+      "state_of_origin": "Borno",
+      "lga": "Maiduguri",
+      "residential_address": "No. 7 Damboa Road, GRA, Maiduguri, Borno State",
+      "phone": "+234-803-456-7891",
+      "photo_ref": "nimc_photo_29384710256.jpg"
+    },
+    {
+      "nin": "50173826491",
+      "surname": "Okafor",
+      "first_name": "Chinedu",
+      "middle_name": "Ikechukwu",
+      "dob": "1985-11-22",
+      "gender": "Male",
+      "state_of_origin": "Anambra",
+      "lga": "Onitsha North",
+      "residential_address": "Plot 14, New Market Road, Onitsha, Anambra State",
+      "phone": "+234-706-812-3340",
+      "photo_ref": "nimc_photo_50173826491.jpg"
+    },
+    {
+      "nin": "71829304615",
+      "surname": "Yusuf",
+      "first_name": "Fatima",
+      "middle_name": "Bello",
+      "dob": "1993-03-08",
+      "gender": "Female",
+      "state_of_origin": "Kano",
+      "lga": "Nassarawa",
+      "residential_address": "No. 23 Murtala Mohammed Way, Nassarawa GRA, Kano State",
+      "phone": "+234-812-905-4467",
+      "photo_ref": "nimc_photo_71829304615.jpg"
+    },
+    {
+      "nin": "38492017563",
+      "surname": "Eze",
+      "first_name": "Emeka",
+      "middle_name": "Nnamdi",
+      "dob": "1991-09-30",
+      "gender": "Male",
+      "state_of_origin": "Enugu",
+      "lga": "Enugu East",
+      "residential_address": "Block 4, Flat 12, Independence Layout, Enugu, Enugu State",
+      "phone": "+234-708-331-2209",
+      "photo_ref": "nimc_photo_38492017563.jpg"
+    },
+    {
+      "nin": "64015928374",
+      "surname": "Sani",
+      "first_name": "Halima",
+      "middle_name": "Abdullahi",
+      "dob": "1996-01-17",
+      "gender": "Female",
+      "state_of_origin": "Kaduna",
+      "lga": "Zaria",
+      "residential_address": "No. 5 Sokoto Road, Samaru, Zaria, Kaduna State",
+      "phone": "+234-816-740-5583",
+      "photo_ref": "nimc_photo_64015928374.jpg"
+    },
+    {
+      "nin": "82716305948",
+      "surname": "Adeyemi",
+      "first_name": "Oluwaseun",
+      "middle_name": "Temitope",
+      "dob": "1988-07-25",
+      "gender": "Male",
+      "state_of_origin": "Oyo",
+      "lga": "Ibadan North",
+      "residential_address": "No. 31 Aare Avenue, Bodija, Ibadan, Oyo State",
+      "phone": "+234-805-218-6690",
+      "photo_ref": "nimc_photo_82716305948.jpg"
+    },
+    {
+      "nin": "15930274816",
+      "surname": "Lawal",
+      "first_name": "Musa",
+      "middle_name": "Danjuma",
+      "dob": "1983-12-03",
+      "gender": "Male",
+      "state_of_origin": "Plateau",
+      "lga": "Jos North",
+      "residential_address": "No. 18 Bauchi Road, Hwolshe, Jos, Plateau State",
+      "phone": "+234-809-663-1147",
+      "photo_ref": "nimc_photo_15930274816.jpg"
+    },
+    {
+      "nin": "46281739502",
+      "surname": "Okoro",
+      "first_name": "Ngozi",
+      "middle_name": "Amarachi",
+      "dob": "1990-04-11",
+      "gender": "Female",
+      "state_of_origin": "Imo",
+      "lga": "Owerri Municipal",
+      "residential_address": "No. 9 Douglas Road, Owerri, Imo State",
+      "phone": "+234-813-502-7741",
+      "photo_ref": "nimc_photo_46281739502.jpg"
+    },
+    {
+      "nin": "93057184623",
+      "surname": "Mohammed",
+      "first_name": "Abdulrahman",
+      "middle_name": "Garba",
+      "dob": "1987-08-19",
+      "gender": "Male",
+      "state_of_origin": "Sokoto",
+      "lga": "Sokoto North",
+      "residential_address": "No. 42 Sultan Abubakar Road, Sokoto, Sokoto State",
+      "phone": "+234-802-194-3358",
+      "photo_ref": "nimc_photo_93057184623.jpg"
+    },
+    {
+      "nin": "70948261350",
+      "surname": "Afolabi",
+      "first_name": "Olumide",
+      "middle_name": "Kayode",
+      "dob": "1994-02-28",
+      "gender": "Male",
+      "state_of_origin": "Lagos",
+      "lga": "Ikeja",
+      "residential_address": "Flat 3, Block D, Omole Phase 2, Ikeja, Lagos State",
+      "phone": "+234-817-609-4425",
+      "photo_ref": "nimc_photo_70948261350.jpg"
+    }
+  ]
+}

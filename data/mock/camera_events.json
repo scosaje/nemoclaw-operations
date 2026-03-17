@@ -1,0 +1,123 @@
+{
+  "_metadata": {
+    "description": "AnSA NemoClaw PoC - Camera Detection Events",
+    "classification": "FICTIONAL - DEMO DATA ONLY",
+    "generated": "2026-03-17T00:00:00Z",
+    "version": "1.0.0"
+  },
+  "events": [
+    {
+      "event_id": "EVT-001",
+      "camera_id": "CAM-047",
+      "location": "Nnamdi Azikiwe Intl Airport, Terminal 1",
+      "timestamp": "2026-03-17T14:23:07Z",
+      "type": "face_detected",
+      "face_embedding_ref": "emb_2847",
+      "confidence": 0.87,
+      "frame_ref": "frame_CAM047_20260317_142307_001.jpg",
+      "notes": "Subject detected at departure hall security checkpoint. Moving towards Gate B3."
+    },
+    {
+      "event_id": "EVT-002",
+      "camera_id": "CAM-012",
+      "location": "Eagle Square, Abuja",
+      "timestamp": "2026-03-17T08:15:42Z",
+      "type": "anomaly_detected",
+      "face_embedding_ref": null,
+      "confidence": 0.62,
+      "frame_ref": "frame_CAM012_20260317_081542_001.jpg",
+      "notes": "Unattended bag detected near main entrance. Bag remained stationary for 12 minutes. Security dispatched."
+    },
+    {
+      "event_id": "EVT-003",
+      "camera_id": "CAM-091",
+      "location": "Wuse Market, Zone 5, Abuja",
+      "timestamp": "2026-03-17T10:47:19Z",
+      "type": "face_detected",
+      "face_embedding_ref": "emb_0456",
+      "confidence": 0.73,
+      "frame_ref": "frame_CAM091_20260317_104719_001.jpg",
+      "notes": "Low-confidence match against watchlist. Subject partially obscured by market crowd. Manual review recommended."
+    },
+    {
+      "event_id": "EVT-004",
+      "camera_id": "CAM-023",
+      "location": "Aso Rock Villa, Outer Perimeter Gate",
+      "timestamp": "2026-03-17T06:30:55Z",
+      "type": "vehicle_detected",
+      "face_embedding_ref": null,
+      "confidence": 0.95,
+      "plate_number": "ABJ-247-KL",
+      "frame_ref": "frame_CAM023_20260317_063055_001.jpg",
+      "notes": "Unregistered vehicle attempted access at outer perimeter. Vehicle turned around after checkpoint query. Plate flagged in stolen vehicle database."
+    },
+    {
+      "event_id": "EVT-005",
+      "camera_id": "CAM-068",
+      "location": "National Assembly Complex, Main Gate",
+      "timestamp": "2026-03-17T09:12:33Z",
+      "type": "face_detected",
+      "face_embedding_ref": "emb_5720",
+      "confidence": 0.81,
+      "frame_ref": "frame_CAM068_20260317_091233_001.jpg",
+      "notes": "Watchlist match at legislative building entrance. Subject was in a group of five individuals. Gate security notified for manual verification."
+    },
+    {
+      "event_id": "EVT-006",
+      "camera_id": "CAM-104",
+      "location": "Zuba Expressway Toll Gate, Abuja-Kaduna Highway",
+      "timestamp": "2026-03-17T07:45:10Z",
+      "type": "vehicle_detected",
+      "face_embedding_ref": null,
+      "confidence": 0.91,
+      "plate_number": "KD-583-JN",
+      "frame_ref": "frame_CAM104_20260317_074510_001.jpg",
+      "notes": "Vehicle flagged on BOLO list. Traveling northbound at approximately 120km/h. Alert forwarded to Kaduna State command."
+    },
+    {
+      "event_id": "EVT-007",
+      "camera_id": "CAM-035",
+      "location": "Central Bank of Nigeria, Headquarters, Abuja",
+      "timestamp": "2026-03-17T11:58:27Z",
+      "type": "anomaly_detected",
+      "face_embedding_ref": null,
+      "confidence": 0.68,
+      "frame_ref": "frame_CAM035_20260317_115827_001.jpg",
+      "notes": "Loitering pattern detected. Individual circled perimeter three times within 45-minute window. Behaviour flagged for review."
+    },
+    {
+      "event_id": "EVT-008",
+      "camera_id": "CAM-047",
+      "location": "Nnamdi Azikiwe Intl Airport, Terminal 1",
+      "timestamp": "2026-03-17T14:31:45Z",
+      "type": "face_detected",
+      "face_embedding_ref": "emb_2847",
+      "confidence": 0.92,
+      "frame_ref": "frame_CAM047_20260317_143145_001.jpg",
+      "notes": "Second detection of same subject. Higher confidence — clearer angle obtained at boarding gate area. Subject appears to be awaiting flight departure."
+    },
+    {
+      "event_id": "EVT-009",
+      "camera_id": "CAM-078",
+      "location": "Jabi Lake Mall, Abuja",
+      "timestamp": "2026-03-17T13:05:51Z",
+      "type": "face_detected",
+      "face_embedding_ref": "emb_0089",
+      "confidence": 0.76,
+      "frame_ref": "frame_CAM078_20260317_130551_001.jpg",
+      "notes": "Watchlist match at mall entrance. Subject entered via parking level B2. Carrying large duffel bag. Mall security alerted."
+    },
+    {
+      "event_id": "EVT-010",
+      "camera_id": "CAM-056",
+      "location": "Kubwa Expressway Checkpoint, Abuja",
+      "timestamp": "2026-03-17T16:40:08Z",
+      "type": "vehicle_detected",
+      "face_embedding_ref": null,
+      "confidence": 0.88,
+      "plate_number": "NSR-912-AB",
+      "frame_ref": "frame_CAM056_20260317_164008_001.jpg",
+      "notes": "Vehicle associated with POI-4162 detected heading towards Suleja. Checkpoint officers alerted. Vehicle occupants: 3 males."
+    }
+  ]
+}

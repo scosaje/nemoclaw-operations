@@ -1,0 +1,36 @@
+# NemoClaw Sandbox Configuration for AnSA Supervisor Agent
+# Defines the OpenShell isolation environment
+
+sandbox:
+  name: ansa-assistant
+  description: "AnSA Supervisor Agent - Sandboxed execution environment"
+
+  isolation:
+    landlock: true        # Filesystem access control (Linux 5.13+)
+    seccomp: true         # Syscall filtering
+    netns: true           # Network namespace isolation
+
+  filesystem:
+    read_only:
+      - "./data/mock"             # Agent reads mock data only
+      - "./agents/supervisor"     # Agent definition and tools
+    writable:
+      - "/tmp/ansa-logs"          # Temporary log output
+    no_access:
+      - "/etc"
+      - "/home"
+      - "/var"
+      - "/root"
+      - "/proc/kcore"
+
+  resources:
+    max_memory: "2Gi"
+    max_cpu: "2"
+    max_file_descriptors: 256
+    max_processes: 32
+    timeout_seconds: 300
+
+  environment:
+    ANSA_ENV: "poc"
+    ANSA_DATA_DIR: "./data/mock"
+    PYTHONPATH: "./agents/supervisor/tools"
