@@ -126,6 +126,14 @@ simple `docker restart`.
 | 50053 | avis-core EventStreamService | gRPC |
 | 50061 | avis-ml (mapped from :50051) | gRPC |
 
+### Edge cluster NodePorts (from dev host via cluster IP)
+
+| Port | Service | Cluster | Protocol |
+|---|---|---|---|
+| 30900 | Decision Engine gRPC | orin-agx-01 (192.168.200.71) | gRPC |
+| 30950 | Camera Registry HTTP | orin-agx-01 (192.168.200.71) | HTTP |
+| 31434 | Ollama inference | orin-agx-02 (192.168.200.72) | HTTP |
+
 ### From the NemoClaw sandbox
 
 Inside the sandbox, AVIS services are resolved via
@@ -640,3 +648,173 @@ To add any model available on NVIDIA's API (`build.nvidia.com`):
      -H "Content-Type: application/json" \
      -d "{\"model\":\"<model-id>\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello\"}],\"max_tokens\":50}"'
    ```
+
+---
+
+## 15. Direct ASIAS / MANDATE troubleshooting
+
+The direct tools (prefixed `asias_*` and `mandate_*`) bypass AVIS and
+hit the downstream services directly. This section covers issues
+specific to those tools. For AVIS-routed tool issues, see sections 7-8
+above.
+
+### Symptom: `asias_*` tools return `config_error`
+
+The `AVIS_NEMOCLAW_ASIAS_API_KEY` env var is not set in
+`docker-compose.nemoclaw.yml`. Without it, all ASIAS direct tools
+refuse to execute rather than sending unauthenticated requests.
+
+```bash
+# Check if the env var is set
+docker exec avis-mcp env | grep AVIS_NEMOCLAW_ASIAS
+
+# Fix: add to overlay
+# AVIS_NEMOCLAW_ASIAS_API_KEY=devkey
+# AVIS_NEMOCLAW_ASIAS_URL=http://host.docker.internal:8010
+```
+
+### Symptom: `asias_*` tools return HTTP 401
+
+The API key doesn't match what ASIAS expects. ASIAS uses
+`X-Api-Key` (not `Authorization: Bearer`). Verify:
+
+```bash
+# Test directly
+curl -s -H "X-Api-Key: devkey" http://localhost:8010/health
+# → should return 200
+
+# If 401, check what key ASIAS expects
+docker exec asias-go-gateway env | grep API_KEY
+```
+
+### Symptom: `mandate_*` tools return HTTP 401
+
+Same issue with MANDATE. Check:
+
+```bash
+curl -s -H "X-Api-Key: devkey" http://localhost:8001/health
+docker exec mandate-mandate-api-1 env | grep API_KEY
+```
+
+### Symptom: `mandate_*` tools return HTTP 500 on incident endpoints
+
+MANDATE's database may need migrations. The direct tools hit the same
+endpoints as the AVIS-routed tools, so this is the same upstream issue:
+
+```bash
+# Run MANDATE migrations
+cd ~/claude-projects/mandate
+docker compose exec mandate-api alembic upgrade head
+```
+
+**Known issue**: the alembic migration may fail with a duplicate index
+error. If so, manually drop the duplicate index:
+
+```bash
+docker compose exec mandate-db psql -U mandate -d mandate -c \
+  "DROP INDEX IF EXISTS ix_duplicate_index_name;"
+docker compose exec mandate-api alembic upgrade head
+```
+
+### Symptom: `asias_graph_search` returns empty results for valid queries
+
+Query parameters are URL-encoded by the direct tools. If the query
+contains special characters (`+`, `&`, `#`), they are encoded correctly.
+However, ASIAS's search endpoint may not support all query syntax.
+Try simpler terms:
+
+```bash
+# Instead of complex queries
+mcporter call asias_graph_search query=trafficking
+
+# Check ASIAS logs for the actual query received
+docker compose logs --tail=20 asias-go-gateway | grep search
+```
+
+### Symptom: direct tools work but AVIS-routed equivalents don't (or vice versa)
+
+The two paths use different network routes and auth mechanisms:
+
+| Aspect | Direct tools | AVIS-routed tools |
+|---|---|---|
+| Network path | avis-mcp -> host.docker.internal -> downstream | avis-mcp -> avis-gateway -> avis-command -> downstream |
+| Auth to downstream | `X-Api-Key` env var | Hardcoded in avis-command config |
+| Auth to agent | None (T3) | operator_confirm for T4/5 |
+
+Check both routes independently to isolate the issue.
+
+---
+
+## 16. Edge Decision Engine direct gRPC
+
+The `de_*` direct tools use gRPC channels managed by the `EdgeRegistry`
+component in `avis-mcp`. This section covers troubleshooting specific
+to those tools. For AVIS-routed DE tools (`avis.camera_*`), see
+section 7 above.
+
+### Symptom: `de_*` tools return `cluster_not_found`
+
+The cluster ID doesn't match any entry in `AVIS_NEMOCLAW_CLUSTERS`:
+
+```bash
+# Check registered clusters
+docker exec avis-mcp env | grep AVIS_NEMOCLAW_CLUSTERS
+
+# The value should be a JSON array like:
+# [{"id":"edge-orin-1","grpc_addr":"192.168.200.71:30900","cameras":[]}]
+```
+
+### Symptom: `de_*` tools return `cluster_unreachable` instantly
+
+The background health probe has marked the cluster as unreachable.
+This means the probe couldn't connect within the 5-second timeout on
+the last check (probes run every 30 seconds).
+
+```bash
+# Check if the DE NodePort is accessible
+timeout 3 bash -c 'exec 3<>/dev/tcp/192.168.200.71/30900 && echo OPEN'
+
+# Check if the NodePort service exists
+ssh sco@192.168.200.71 \
+  'KUBECONFIG=~/.kube/config kubectl get svc -n security-intel decision-service-v2-nodeport'
+
+# Test gRPC directly
+grpcurl -plaintext 192.168.200.71:30900 \
+  decision_service.command.CommandReceiverService/HealthCheck
+```
+
+### Symptom: `de_*` tools hang for 5+ seconds
+
+The background probe hasn't run yet (first 30 seconds after startup)
+or the probe cache is stale and the actual gRPC call is timing out.
+The first call after `avis-mcp` startup may be slow. Subsequent calls
+use the probe cache.
+
+### Background probe monitoring
+
+The EdgeRegistry logs probe results to `avis-mcp`'s stdout:
+
+```bash
+docker compose logs --tail=20 avis-mcp | grep -i 'probe\|edge\|cluster'
+# → "edge-orin-1: probe OK (12ms)" or "edge-orin-1: probe FAILED (timeout)"
+```
+
+### Adding a new cluster for direct DE tools
+
+The process is the same as section 13 (adding a new edge cluster for
+AVIS-routed tools). The `AVIS_NEMOCLAW_CLUSTERS` env var is shared
+between `avis-mcp` (direct DE tools) and `avis-command` (AVIS-routed
+camera tools). Adding a cluster to the env var makes it available to
+both paths.
+
+```bash
+# After updating AVIS_NEMOCLAW_CLUSTERS in docker-compose.nemoclaw.yml
+docker compose -f docker-compose.yml -f docker-compose.nemoclaw.yml \
+  up -d --no-deps avis-command avis-mcp
+
+# Verify direct path
+mcporter call de_health cluster_id=edge-new-cluster
+
+# Verify AVIS-routed path
+mcporter call avis.list_clusters
+```

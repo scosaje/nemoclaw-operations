@@ -8,7 +8,7 @@ It changes between integration stages. Always trust this file over your assumpti
 
 ## Current integration stage
 
-**Stage 9 — Multi-cluster registration + LIVE PTZ on real Orin AGX cluster.**
+**Stage 9 + Hybrid Direct Integration — 87 MCP tools total.**
 
 - ✅ AVIS source mounted at `/sandbox/avis-src/`
 - ✅ AVIS REST gateway reachable at `http://avis-gateway:8090`
@@ -22,19 +22,30 @@ It changes between integration stages. Always trust this file over your assumpti
   - `avis.list_clusters` (Tier 1) — discover registered clusters
   - `avis.cluster_cameras` (Tier 3) — discover live cameras via Camera Registry, credentials stripped
   - End-to-end PTZ verified against the real Orin Decision Engine (camera `cam64`)
+- ✅ **Direct ASIAS/MANDATE/DE integration (2026-04-12, Hybrid architecture)**
+  - 21 `asias_*` tools — direct HTTP to ASIAS Go Gateway for graph, watchlist, POI, alert queries
+  - 22 `mandate_*` tools — direct HTTP to MANDATE API for incidents, workflows, approvals, EWS, officers, orgs
+  - 7 `de_*` tools — direct gRPC to Decision Engine via EdgeRegistry with background health probing
+  - T3 reads bypass AVIS for speed; T4 mutations still go through AVIS
+  - Security: `validate_id()` path injection prevention, HTTP status checking, URL encoding, no hardcoded keys
 
-## Inference models
+## Inference models (updated 2026-04-11)
 
-Two models are configured. Switch at runtime — no sandbox rebuild needed:
+Three inference configurations are available. Switch at runtime — no sandbox rebuild needed:
 
-| Model | Command | Use case |
-|---|---|---|
-| Nemotron 3 Super 120B (default) | `openshell inference set --provider nvidia-prod --model nvidia/nemotron-3-super-120b-a12b` | Heavy reasoning, long context, 131K window |
-| Gemma 4 31B (Google) | `openshell inference set --provider nvidia-prod --model google/gemma-4-31b-it` | Lighter, faster, 128K context |
+| Model | Provider | Endpoint | Context | Use case |
+|---|---|---|---|---|
+| Nemotron 3 Super 120B (default) | NVIDIA API | `https://integrate.api.nvidia.com/v1` | 131K | Primary: heavy reasoning, long context |
+| Gemma 4 31B (Google) | NVIDIA API | `https://integrate.api.nvidia.com/v1` | 128K | Lighter, faster via NVIDIA cloud |
+| Gemma 4 E4B (31B) | Cluster Ollama | `http://192.168.200.72:31434/v1` | 128K | Local inference, no API cost, on Orin AGX |
 
-Both use the same NVIDIA API key and `https://integrate.api.nvidia.com/v1` endpoint. The switch takes effect immediately — no sandbox restart needed.
+**NVIDIA models** use the same API key and `https://integrate.api.nvidia.com/v1` endpoint. The switch takes effect immediately.
 
-You can also override the model via the `NEMOCLAW_MODEL_OVERRIDE` env var on the sandbox container (requires restart but survives reboots). See the NemoClaw docs for PR #1633.
+**Cluster Ollama** runs on `orin-agx-02` (192.168.200.72:31434). Requires the `ollama-inference.yaml` policy preset. See the NemoClaw docs for model switching procedures.
+
+**Known issue (OpenShell 0.0.26)**: `inference.local` is broken. The workaround is to patch `openclaw.json` to point directly at the endpoint. See the runbook for details.
+
+You can also override the model via the `NEMOCLAW_MODEL_OVERRIDE` env var on the sandbox container (requires restart but survives reboots).
 
 ## Cluster discovery + Camera Registry (Stage 9)
 
@@ -271,6 +282,186 @@ exec: /sandbox/.npm-global/bin/mcporter call avis.mandate_agency_workload
 - Use `avis.mandate_*` (Stage 5 — preferred) when you want structured JSON to reason about. **This is the default.**
 - Use `avis.intel_agent_ask agent=mandate question="..."` (Stage 3) when you want a narrated voice-style answer for the operator (it goes through Claude synthesis on the avis-ml side).
 - Never call mandate-api directly. Sovereignty: every MANDATE call goes through AVIS code.
+
+---
+
+---
+
+## Direct ASIAS queries (Hybrid, 2026-04-12)
+
+21 tools prefixed `asias_*`. All Tier 3 read-only. These bypass AVIS and query the ASIAS Go Gateway directly via HTTP. Faster than the `avis.intel_agent_ask agent=asias` path. **Preferred for structured data queries.**
+
+Auth: `X-Api-Key` header, key from `AVIS_NEMOCLAW_ASIAS_API_KEY` env var.
+
+### Graph & association
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `asias_graph_associations` | _(none)_ | All graph associations |
+| `asias_graph_poi_neighbors` | `poi_id` | POI neighbor nodes |
+| `asias_graph_poi_connections` | `poi_id` | All connections for a POI |
+| `asias_graph_search` | `query` | Search results by keyword |
+| `asias_graph_stats` | _(none)_ | Graph statistics (nodes, edges, density) |
+
+### Cross-agency
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `asias_cross_agency_alerts` | _(none)_ | Cross-agency alert feed |
+| `asias_cross_agency_summary` | _(none)_ | Aggregated cross-agency summary |
+
+### Watchlists
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `asias_watchlist_entries` | _(none)_ | All watchlist entries |
+| `asias_watchlist_check` | `identifier` | Whether identifier is on any watchlist |
+| `asias_watchlist_stats` | _(none)_ | Watchlist statistics |
+
+### POI & timeline
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `asias_poi_detail` | `poi_id` | Full POI detail |
+| `asias_poi_timeline` | `poi_id` | Event timeline for POI |
+| `asias_poi_neighbors` | `poi_id` | POI neighbor entities |
+| `asias_poi_risk_score` | `poi_id` | Computed risk score |
+
+### Alerts
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `asias_alerts_list` | _(none)_ | All alerts |
+| `asias_alerts_detail` | `alert_id` | Single alert detail |
+| `asias_alerts_by_severity` | `severity` | Alerts filtered by severity |
+
+### System
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `asias_health` | _(none)_ | ASIAS health check |
+| `asias_agencies` | _(none)_ | List of 14 Nigerian security agencies |
+| `asias_event_types` | _(none)_ | Supported SIS event types |
+| `asias_system_stats` | _(none)_ | System-wide statistics |
+
+### Example calls
+
+```bash
+exec: /sandbox/.npm-global/bin/mcporter call asias_graph_poi_neighbors poi_id=POI-2025-0042
+exec: /sandbox/.npm-global/bin/mcporter call asias_watchlist_check identifier=NIN-12345678
+exec: /sandbox/.npm-global/bin/mcporter call asias_alerts_by_severity severity=CRITICAL
+exec: /sandbox/.npm-global/bin/mcporter call asias_poi_risk_score poi_id=POI-2025-0042
+```
+
+---
+
+## Direct MANDATE queries (Hybrid, 2026-04-12)
+
+22 tools prefixed `mandate_*`. All Tier 3 read-only. These bypass AVIS and query MANDATE's FastAPI directly. **Preferred over the AVIS-routed `avis.mandate_*` tools for structured data** — same data, fewer hops, faster.
+
+Auth: `X-Api-Key` header, key from `AVIS_NEMOCLAW_MANDATE_API_KEY` env var.
+
+### Incidents
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `mandate_incidents_active` | _(none)_ | Active incidents |
+| `mandate_incidents_by_severity` | `severity` | Incidents filtered by severity |
+| `mandate_incident_detail` | `incident_id` | Full incident detail |
+| `mandate_incident_timeline` | `incident_id` | Incident event timeline |
+| `mandate_incident_agencies` | `incident_id` | Agencies assigned to incident |
+
+### Workflows
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `mandate_workflows_active` | _(none)_ | Active enforcement workflows |
+| `mandate_workflow_detail` | `workflow_id` | Full workflow detail |
+| `mandate_workflow_approvals` | `workflow_id` | Approval chain |
+| `mandate_workflow_history` | `workflow_id` | Step-by-step workflow history |
+
+### Approvals & officers
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `mandate_approvals_pending` | _(none)_ | All pending approvals |
+| `mandate_officers_on_duty` | _(none)_ | Officers currently on duty |
+| `mandate_officer_detail` | `officer_id` | Officer detail |
+| `mandate_officer_assignments` | `officer_id` | Current officer assignments |
+
+### Early Warning System (EWS)
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `mandate_ews_active` | _(none)_ | Active early warning signals |
+| `mandate_ews_by_region` | `region` | EWS signals by region (e.g. `North-East`) |
+| `mandate_ews_detail` | `ews_id` | EWS signal detail |
+
+### Organisations
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `mandate_orgs_list` | _(none)_ | All MANDATE organisations |
+| `mandate_org_detail` | `org_id` | Organisation detail |
+| `mandate_org_incidents` | `org_id` | Incidents linked to organisation |
+
+### Dashboard
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `mandate_dashboard_overview` | _(none)_ | Top-level dashboard metrics |
+| `mandate_dashboard_agency_load` | _(none)_ | Per-agency workload |
+| `mandate_dashboard_pipeline` | _(none)_ | Pipeline status |
+
+### Example calls
+
+```bash
+exec: /sandbox/.npm-global/bin/mcporter call mandate_incidents_active
+exec: /sandbox/.npm-global/bin/mcporter call mandate_incident_timeline incident_id=INC-2026-001
+exec: /sandbox/.npm-global/bin/mcporter call mandate_approvals_pending
+exec: /sandbox/.npm-global/bin/mcporter call mandate_ews_by_region region=North-East
+exec: /sandbox/.npm-global/bin/mcporter call mandate_officers_on_duty
+exec: /sandbox/.npm-global/bin/mcporter call mandate_org_detail org_id=NPF
+```
+
+---
+
+## Direct Edge DE tools (2026-04-12)
+
+7 tools prefixed `de_*`. All Tier 3 read-only. Direct gRPC to the Decision Engine on edge clusters using the `EdgeRegistry` component.
+
+**EdgeRegistry**: manages gRPC channel pools with lazy connections and an async background health probe (every 30s). If the probe marks a cluster as unreachable, `de_*` tools return `cluster_unreachable` immediately without waiting for the gRPC timeout.
+
+Auth: unauthenticated (cluster-local). NodePort 30900 exposed by NemoClaw k8s overlay.
+
+| Tool | Inputs | What it returns |
+|---|---|---|
+| `de_health` | `cluster_id` | DE health check for one cluster |
+| `de_camera_status` | `cluster_id`, `camera_id` | Camera state (authoritative for PTZ-capable cameras) |
+| `de_cameras_list` | `cluster_id` | All cameras known to the DE on that cluster |
+| `de_detection_feed` | `cluster_id` | Recent detection events from DE |
+| `de_cluster_health` | `cluster_id` | Aggregated cluster health (GPU, memory, pipeline) |
+| `de_zones_list` | `cluster_id` | Security zones configured on cluster |
+| `de_zone_cameras` | `cluster_id`, `zone_id` | Cameras assigned to a specific zone |
+
+### Example calls
+
+```bash
+exec: /sandbox/.npm-global/bin/mcporter call de_health cluster_id=edge-orin-1
+exec: /sandbox/.npm-global/bin/mcporter call de_camera_status --args '{"cluster_id":"edge-orin-1","camera_id":"cam64"}'
+exec: /sandbox/.npm-global/bin/mcporter call de_detection_feed cluster_id=edge-orin-1
+exec: /sandbox/.npm-global/bin/mcporter call de_zones_list cluster_id=edge-orin-1
+```
+
+### When to use `de_*` vs `avis.camera_*`
+
+| Use case | Preferred tool | Why |
+|---|---|---|
+| Quick camera status check | `de_camera_status` | Direct, uses background probe cache |
+| List all cameras on cluster | `de_cameras_list` | Comprehensive DE-native list |
+| Detection feed | `de_detection_feed` | Only available via direct path |
+| PTZ control (T5) | `avis.camera_pan_tilt_zoom` | Mutations go through AVIS (sovereignty) |
+| Camera recording (T5) | `avis.camera_start_recording` | Same — mutations through AVIS |
 
 ---
 
