@@ -6,7 +6,9 @@ stack.
 **Operator**: Inspired Technologies Limited (ITL), Abuja, Nigeria.
 **Status**: All 8 stages complete and verified. Stage 9 (multi-cluster)
 added 2026-04-07. Direct ASIAS/MANDATE/DE integration added 2026-04-12.
-NemoClaw upgrade to v0.0.12 completed 2026-04-11.
+NemoClaw upgraded to **v0.0.114** on 2026-08-25 (OpenShell 0.0.106,
+OpenClaw 2026.7.1) — see [11-upgrade-20260825.md](./11-upgrade-20260825.md)
+for the current connection details, which supersede anything dated earlier.
 
 This documentation set is the canonical record of what was built, why,
 and how to operate it. Read the files in order on a first pass; use them
@@ -26,6 +28,7 @@ as a reference afterwards.
 | 08 | [next-steps.md](./08-next-steps.md) | What could come next: hardening, observability, additional integrations |
 | 09 | [direct-integration.md](./09-direct-integration.md) | Hybrid architecture: 50 direct ASIAS/MANDATE/DE tools, security measures, code review fixes |
 | 10 | [nemoclaw-upgrade.md](./10-nemoclaw-upgrade.md) | NemoClaw v0.0.12 upgrade, OpenShell 0.0.26, Gemma 4 deployment, model switching |
+| 11 | [upgrade-20260825.md](./11-upgrade-20260825.md) | **Current state** — v0.0.114, OpenShell 0.0.106, gateway port 18080, Nemotron 3 Ultra 550B, restore checklist |
 
 ## At-a-glance
 
@@ -57,18 +60,18 @@ cd ~/claude-projects/ansa-voice-intelligence-system
 docker compose -f docker-compose.yml -f docker-compose.nemoclaw.yml up -d
 
 # Verify from the sandbox
-ssh openshell-ansa-assistant '/sandbox/.npm-global/bin/mcporter call avis.health'
+nemoclaw ansa-assistant exec -- bash -lc '/sandbox/.npm-global/bin/mcporter call avis.health'
 # → {"healthy":true,"components":{"camera_controller":true,"gateway":true},...}
 
-ssh openshell-ansa-assistant '/sandbox/.npm-global/bin/mcporter call avis.events_drain timeout_ms=2000'
+nemoclaw ansa-assistant exec -- bash -lc '/sandbox/.npm-global/bin/mcporter call avis.events_drain timeout_ms=2000'
 # → live ASIAS / SIS events + internal AVIS health events
 
 # Direct ASIAS query (hybrid, 2026-04-12)
-ssh openshell-ansa-assistant '/sandbox/.npm-global/bin/mcporter call asias_graph_stats'
+nemoclaw ansa-assistant exec -- bash -lc '/sandbox/.npm-global/bin/mcporter call asias_graph_stats'
 # → graph node/edge counts
 
 # Direct MANDATE query (hybrid, 2026-04-12)
-ssh openshell-ansa-assistant '/sandbox/.npm-global/bin/mcporter call mandate_incidents_active'
+nemoclaw ansa-assistant exec -- bash -lc '/sandbox/.npm-global/bin/mcporter call mandate_incidents_active'
 # → active MANDATE incidents
 ```
 
@@ -99,7 +102,8 @@ to this machine; adjust for your environment.
 - "Overlay" means `docker-compose.nemoclaw.yml` — the additive compose
   file that introduces NemoClaw without editing the base
 - "Sandbox" means the NemoClaw/OpenShell agent sandbox, accessible via
-  `ssh openshell-ansa-assistant` from this dev host
+  `nemoclaw ansa-assistant connect` (interactive) or
+  `nemoclaw ansa-assistant exec -- <cmd>` (non-interactive) from this dev host
 
 ## Doctrine
 

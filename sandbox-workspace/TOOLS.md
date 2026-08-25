@@ -43,7 +43,7 @@ Three inference configurations are available. Switch at runtime — no sandbox r
 
 **Cluster Ollama** runs on `orin-agx-02` (192.168.200.72:31434). Requires the `ollama-inference.yaml` policy preset. See the NemoClaw docs for model switching procedures.
 
-**Known issue (OpenShell 0.0.26)**: `inference.local` is broken. The workaround is to patch `openclaw.json` to point directly at the endpoint. See the runbook for details.
+**Resolved**: the OpenShell 0.0.26 `inference.local` proxy bug is fixed as of 0.0.44 (running 0.0.106). No `openclaw.json` patching is needed — onboard configures the route via the gateway. Note that `nemoclaw status` may still report inference as "unreachable" on slow models; its probe times out. Verify with a direct call before believing it.
 
 You can also override the model via the `NEMOCLAW_MODEL_OVERRIDE` env var on the sandbox container (requires restart but survives reboots).
 
@@ -644,7 +644,7 @@ Every call you make to the gateway — Tier 1, 2, or 3 — appends one JSONL lin
 
 ## Sandbox topology — what to remember
 
-- **Workspace files** (this folder): `/sandbox/.openclaw-data/workspace/` — symlinked through `/sandbox/.openclaw/workspace/`. Edit either path; they're the same files.
+- **Workspace files** (this folder): `/sandbox/.openclaw/workspace/`. OpenShell 0.0.44 consolidated the old `/sandbox/.openclaw-data/` root into `/sandbox/.openclaw/`; the `-data` path no longer exists.
 - **AVIS source:** `/sandbox/avis-src/` — uploaded snapshot, not git-linked.
 - **Tmp:** `/tmp/` — writable, ephemeral.
 - **Network egress** is whitelisted. The default policy already permits NVIDIA inference, GitHub, npm, Brave search, etc. Anything else needs a NemoClaw policy preset.

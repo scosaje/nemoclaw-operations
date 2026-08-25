@@ -62,7 +62,7 @@ echo ""
 
 echo -e "${YELLOW}[Launching Supervisor Agent in sandbox...]${NC}"
 echo -e "  Agent:    ${CYAN}ansa-assistant${NC}"
-echo -e "  Model:    ${CYAN}nvidia/nemotron-3-super-120b-a12b${NC}"
+echo -e "  Model:    ${CYAN}nvidia/nemotron-3-ultra-550b-a55b${NC}"
 echo -e "  Sandbox:  ${CYAN}OpenShell (landlock + seccomp + netns)${NC}"
 echo -e "  Data:     ${CYAN}Simulated (mock)${NC}"
 echo ""

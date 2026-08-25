@@ -39,7 +39,7 @@ REST endpoints are relative to `http://avis-gateway:8190` from the host, or
 
 ### mcporter from the sandbox
 
-From inside the NemoClaw sandbox (`ssh openshell-ansa-assistant`):
+From inside the NemoClaw sandbox (`nemoclaw ansa-assistant connect`, or non-interactively `nemoclaw ansa-assistant exec -- <cmd>`):
 
 ```bash
 # Simple tools (no args)

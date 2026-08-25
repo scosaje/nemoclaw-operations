@@ -71,7 +71,9 @@ cd ~/NemoClaw
   --agent ansa-assistant
 ```
 
-This creates the sandbox container `openshell-ansa-assistant`, applies
+This creates the sandbox container `openshell-default--ansa-assistant-<uuid>`
+(the `default--` namespace prefix and trailing UUID were introduced by
+OpenShell 0.0.106; the UUID changes on every rebuild), applies
 both AVIS policy presets (REST + MCP egress), and uploads the
 `sandbox-workspace/` files to `/sandbox/home/`.
 
@@ -91,8 +93,8 @@ cd ~/NemoClaw
 ### Attach to the sandbox interactively
 
 ```bash
-ssh openshell-ansa-assistant
-# You are now root inside /sandbox
+nemoclaw ansa-assistant connect
+# You are now inside /sandbox
 ```
 
 ### Re-attach sandbox to AVIS network
@@ -102,9 +104,8 @@ OpenShell's egress proxy bridges them, BUT the sandbox also needs to
 be reachable via Docker DNS for gRPC calls. On a cold onboard, run:
 
 ```bash
-docker network connect \
-  ansa-voice-intelligence-system_default \
-  openshell-ansa-assistant
+docker network connect ansa-voice-intelligence-system_default \
+  $(docker ps --format '{{.Names}}' | grep -E '^openshell-.*ansa-assistant')
 ```
 
 Run this after every `./nemoclaw onboard`. It's not needed after a
@@ -185,7 +186,7 @@ grpcurl -plaintext localhost:50053 list 2>&1 | head -5
 ### From inside the sandbox
 
 ```bash
-ssh openshell-ansa-assistant
+nemoclaw ansa-assistant connect
 mcporter call avis.health
 mcporter call avis.events_drain --args '{"timeout_ms":2000,"limit":10}'
 
@@ -428,21 +429,28 @@ docker compose build avis-gateway avis-mcp avis-command avis-core
 
 After editing files in `~/claude-projects/nemoclaw_operations/sandbox-workspace/`,
 push them into the sandbox's workspace directory at
-`/sandbox/.openclaw-data/workspace/`. There is **no** `nemoclaw sandbox
-upload` subcommand — push via SSH redirect:
+`/sandbox/.openclaw/workspace/` (OpenShell 0.0.44 consolidated the old
+`/sandbox/.openclaw-data/` root into `/sandbox/.openclaw/`).
+
+Use `nemoclaw <name> upload`. **Its final argument is a destination
+DIRECTORY, not a filename** — passing a full file path makes it `mkdir`
+that path, which fails with `File exists` on an existing file and, for a
+new name, silently creates a *directory* containing the file:
 
 ```bash
 # Edit on the host (source of truth)
 $EDITOR ~/claude-projects/nemoclaw_operations/sandbox-workspace/AGENTS.md
 
-# Push into the sandbox
-cat ~/claude-projects/nemoclaw_operations/sandbox-workspace/AGENTS.md \
-  | ssh openshell-ansa-assistant 'cat > /sandbox/.openclaw-data/workspace/AGENTS.md'
-cat ~/claude-projects/nemoclaw_operations/sandbox-workspace/TOOLS.md \
-  | ssh openshell-ansa-assistant 'cat > /sandbox/.openclaw-data/workspace/TOOLS.md'
+# Push into the sandbox — note the DIRECTORY destination
+for f in AGENTS.md TOOLS.md IDENTITY.md SOUL.md USER.md MEMORY.md; do
+  nemoclaw ansa-assistant upload \
+    ~/claude-projects/nemoclaw_operations/sandbox-workspace/$f \
+    /sandbox/.openclaw/workspace
+done
 
 # Verify
-ssh openshell-ansa-assistant 'wc -l /sandbox/.openclaw-data/workspace/{AGENTS,TOOLS}.md'
+nemoclaw ansa-assistant exec -- bash -lc \
+  'wc -c /sandbox/.openclaw/workspace/{AGENTS,TOOLS,IDENTITY,SOUL,USER,MEMORY}.md'
 ```
 
 The agent reads these files on every session startup. Changes propagate
@@ -523,10 +531,10 @@ avis-mcp:
 docker compose -f docker-compose.yml -f docker-compose.nemoclaw.yml \
   up -d --no-deps avis-command avis-mcp
 
-ssh openshell-ansa-assistant '/sandbox/.npm-global/bin/mcporter call avis.list_clusters'
+nemoclaw ansa-assistant exec -- bash -lc '/sandbox/.npm-global/bin/mcporter call avis.list_clusters'
 # expect: count = number of clusters in the env var
 
-ssh openshell-ansa-assistant \
+nemoclaw ansa-assistant exec -- bash -lc \
   '/sandbox/.npm-global/bin/mcporter call avis.cluster_cameras --args "{\"cluster_id\":\"edge-kano-1\",\"ptz_only\":true}"'
 ```
 
@@ -571,7 +579,7 @@ docker exec avis-command sh -c \
 docker exec avis-core env | grep AVIS_
 
 # Sandbox tool discovery
-ssh openshell-ansa-assistant 'mcporter list avis | head -40'
+nemoclaw ansa-assistant exec -- bash -lc 'mcporter list avis | head -40'
 ```
 
 ---
@@ -586,24 +594,33 @@ sandbox.
 
 | Model | Provider | Model ID | Context |
 |---|---|---|---|
+| Nemotron 3 Ultra 550B | nvidia-prod | `nvidia/nemotron-3-ultra-550b-a55b` | 131K |
 | Nemotron 3 Super 120B | nvidia-prod | `nvidia/nemotron-3-super-120b-a12b` | 131K |
-| Gemma 4 31B (Google) | nvidia-prod | `google/gemma-4-31b-it` | 128K |
+| Nemotron 3.5 Lightning 30B | nvidia-prod | `nvidia/nemotron-3.5-lightning-30b-a3b` | 131K |
+| ~~Gemma 4 31B (Google)~~ | nvidia-prod | `google/gemma-4-31b-it` | — |
+
+**Current model: Nemotron 3 Ultra 550B.** Measured latency on a trivial
+prompt is ~62 s end-to-end, against ~1.6 s for Super 120B and ~11 s for
+3.5 Lightning — weigh that before using it on a latency-sensitive path.
+
+**`google/gemma-4-31b-it` is listed in the catalog but does not serve** —
+verified 2026-08-25, no response within 120 s. Do not route to it.
 
 ### Switch at runtime (no restart)
 
 ```bash
-# Switch to Gemma 4 31B
-docker exec openshell-cluster-openshell \
-  openshell inference set \
-    --provider nvidia-prod \
-    --model google/gemma-4-31b-it
+# Switch to Nemotron 3 Super 120B (fastest)
+nemoclaw inference set --sandbox ansa-assistant \
+  --provider nvidia-prod --model nvidia/nemotron-3-super-120b-a12b
 
-# Switch back to Nemotron (default)
-docker exec openshell-cluster-openshell \
-  openshell inference set \
-    --provider nvidia-prod \
-    --model nvidia/nemotron-3-super-120b-a12b
+# Switch back to Ultra 550B (current default)
+nemoclaw inference set --sandbox ansa-assistant \
+  --provider nvidia-prod --model nvidia/nemotron-3-ultra-550b-a55b --no-verify
 ```
+
+`nemoclaw inference set` verifies the route by issuing a real completion,
+and that probe times out on slow models. Ultra 550B therefore needs
+`--no-verify` — confirm the route with a direct `curl` first.
 
 ### Verify current model
 
@@ -617,16 +634,19 @@ nemoclaw ansa-assistant status
 Post-upgrade (v0.0.12+), NemoClaw supports `NEMOCLAW_MODEL_OVERRIDE`:
 
 ```bash
-# Set override on the sandbox container
-docker exec openshell-cluster-openshell \
-  sh -c 'echo "NEMOCLAW_MODEL_OVERRIDE=google/gemma-4-31b-it" >> /etc/environment'
-
-# Restart the sandbox entrypoint to apply
-nemoclaw ansa-assistant destroy --yes && nemoclaw onboard
+# Non-interactive onboard/rebuild reads NEMOCLAW_MODEL / NEMOCLAW_PROVIDER
+NEMOCLAW_MODEL=nvidia/nemotron-3-super-120b-a12b \
+NEMOCLAW_PROVIDER=nvidia-prod \
+  nemoclaw ansa-assistant rebuild --yes
 ```
 
-The env var approach survives reboots but requires a sandbox restart.
-The `openshell inference set` approach is instant but resets on restart.
+Prefer `nemoclaw inference set` for a model change: it is instant and
+persists in the sandbox registry. Reach for the env vars only during an
+onboard or rebuild, and be aware that setting them to something the saved
+onboarding session disagrees with can trip a registry-vs-session conflict.
+
+> The old `docker exec openshell-cluster-openshell …` form no longer
+> applies — OpenShell 0.0.44 removed the hosted-k3s cluster container.
 
 ### Adding a new model
 
@@ -639,12 +659,12 @@ To add any model available on NVIDIA's API (`build.nvidia.com`):
    ```
 2. Switch at runtime:
    ```bash
-   docker exec openshell-cluster-openshell \
-     openshell inference set --provider nvidia-prod --model <model-id>
+   nemoclaw inference set --sandbox ansa-assistant \
+     --provider nvidia-prod --model <model-id>
    ```
-3. Test from the sandbox:
+3. Test from the sandbox — a catalog listing does **not** prove a route serves:
    ```bash
-   ssh openshell-ansa-assistant 'curl -s http://inference.local/v1/chat/completions \
+   nemoclaw ansa-assistant exec -- bash -lc 'curl -s http://inference.local/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d "{\"model\":\"<model-id>\",\"messages\":[{\"role\":\"user\",\"content\":\"Hello\"}],\"max_tokens\":50}"'
    ```
