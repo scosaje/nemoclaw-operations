@@ -204,7 +204,9 @@ ClusterIP — not externally reachable.
 1. **NodePort sibling Service** (`k8s/de-nodeport.yaml`) exposes the
    Decision Engine's gRPC `CommandReceiverService` on `30900`. Sibling
    to the existing `decision-service-v2` ClusterIP — does NOT modify
-   the Decision Engine team's manifests.
+   the Decision Engine team's manifests. *(2026-09-27: the Service
+   moved to the decision-service repo, `k8s/deployment-v2.yaml`; this
+   repo no longer defines it.)*
 2. **NodePort sibling Service** (`k8s/camreg-nodeport.yaml`) exposes
    the Camera Registry HTTP API on `30950`.
 3. **Replace-mode env var** `AVIS_NEMOCLAW_CLUSTERS` overrides the

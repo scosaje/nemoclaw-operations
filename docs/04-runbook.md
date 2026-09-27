@@ -465,12 +465,22 @@ walks through `edge-orin-1` (the orin-agx cluster mastered at
 
 ### 13.1 Apply NodePort sibling Services on the cluster
 
-```bash
-# DE NodePort (gRPC CommandReceiverService → 30900)
-ssh sco@<cluster-master> \
-    'KUBECONFIG=~/.kube/config kubectl apply -n security-intel -f -' \
-    < ~/claude-projects/nemoclaw_operations/k8s/de-nodeport.yaml
+The Decision Engine NodePort (`decision-service-v2-nodeport`, gRPC
+`CommandReceiverService` → `30900`) is **not** applied from this repo. Since
+2026-09-27 it is defined and owned by the decision-service repo, in
+`decision-service-cpu-v2.1.3-hardened/k8s/deployment-v2.yaml`, next to the
+Deployment it serves (the ASIAS gateway's CueAOI dispatch uses it too). Check
+it exists before registering a cluster:
 
+```bash
+ssh sco@<cluster-master> \
+    'KUBECONFIG=~/.kube/config kubectl get svc -n security-intel decision-service-v2-nodeport'
+```
+
+If a cluster lacks it, get it applied from the decision-service repo — do not
+re-create it here.
+
+```bash
 # Camera Registry NodePort (HTTP /cameras/metadata → 30950)
 ssh sco@<cluster-master> \
     'KUBECONFIG=~/.kube/config kubectl apply -n camreg -f -' \
@@ -541,12 +551,12 @@ nemoclaw ansa-assistant exec -- bash -lc \
 ### 13.5 Revert (drop a cluster)
 
 Remove the cluster's entries from both JSON arrays in the overlay,
-restart `avis-command` and `avis-mcp`. To remove the NodePorts:
+restart `avis-command` and `avis-mcp`. To remove the Camera Registry
+NodePort (never delete `decision-service-v2-nodeport`: it belongs to the
+decision-service repo and also carries AVIS and the ASIAS gateway's CueAOI
+traffic):
 
 ```bash
-ssh sco@<cluster-master> \
-    'KUBECONFIG=~/.kube/config kubectl delete -n security-intel \
-     svc decision-service-v2-nodeport'
 ssh sco@<cluster-master> \
     'KUBECONFIG=~/.kube/config kubectl delete -n camreg svc cam-registry-nodeport'
 ```

@@ -270,7 +270,10 @@ channel pools to edge clusters. Key design:
 
 Decision Engine gRPC is **unauthenticated** (cluster-local traffic on
 the Kubernetes pod network, exposed via NodePort for the PoC). The
-NodePort at `30900` was added by the NemoClaw k8s overlay.
+NodePort at `30900` was added by the NemoClaw k8s overlay; since
+2026-09-27 it is defined in the decision-service repo
+(`k8s/deployment-v2.yaml`). Caller auth (`x-api-key`) exists there but is
+off unless the decision service sets `ENABLE_GRPC_AUTH=true`.
 
 ### Tool catalogue
 

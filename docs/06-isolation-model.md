@@ -303,7 +303,7 @@ These needed extra care to respect isolation:
 | `reqwest::Client` for camreg HTTP | `avis-mcp/src/clients.rs` | Zero. Idle until `cluster_cameras` is called. |
 | `avis.list_clusters` MCP tool (Tier 1) | `avis-mcp/src/service.rs` | Always advertised; idle when not called. |
 | `avis.cluster_cameras` MCP tool (Tier 3) | `avis-mcp/src/service.rs` | Always advertised; never echoes `user_name` / `password` (explicit field whitelist). |
-| **NodePort sibling Service: `decision-service-v2-nodeport`** | k8s `security-intel` namespace on the cluster | Zero. New Service object with same selector — additive. Revert is `kubectl delete svc`. |
+| ~~NodePort sibling Service: `decision-service-v2-nodeport`~~ | k8s `security-intel` namespace on the cluster | **No longer a NemoClaw change.** Moved to the decision-service repo (`k8s/deployment-v2.yaml`) on 2026-09-27; it now also carries the ASIAS gateway's CueAOI traffic, so it must not be deleted as part of a NemoClaw revert. |
 | **NodePort sibling Service: `cam-registry-nodeport`** | k8s `camreg` namespace on the cluster | Zero. Same pattern as above. |
 
 **The only "always on" change is the MandateQueryServicer registration**

@@ -71,7 +71,7 @@ These two registries are NOT synchronised on this cluster. If you call `avis.cam
 
 ## Decision Engine / camera tools (Stage 8 + Stage 9)
 
-These wrap `CommandService` camera RPCs that avis-command sends via gRPC to the Decision Engine on an edge cluster. Stage 9 added the real cluster `edge-orin-1 → 192.168.200.71:30900` (NodePort 30900 patched in via NemoClaw's k8s overlay; reverting drops the sibling Service).
+These wrap `CommandService` camera RPCs that avis-command sends via gRPC to the Decision Engine on an edge cluster. Stage 9 added the real cluster `edge-orin-1 → 192.168.200.71:30900` (NodePort 30900, the decision-service's `decision-service-v2-nodeport` Service — owned by the decision-service repo since 2026-09-27).
 
 ### Tier 3 — read-only Decision Engine reads
 
@@ -432,7 +432,7 @@ exec: /sandbox/.npm-global/bin/mcporter call mandate_org_detail org_id=NPF
 
 **EdgeRegistry**: manages gRPC channel pools with lazy connections and an async background health probe (every 30s). If the probe marks a cluster as unreachable, `de_*` tools return `cluster_unreachable` immediately without waiting for the gRPC timeout.
 
-Auth: unauthenticated (cluster-local). NodePort 30900 exposed by NemoClaw k8s overlay.
+Auth: unauthenticated (cluster-local) unless the decision service enables `ENABLE_GRPC_AUTH` (then an `x-api-key` is required). NodePort 30900 is the decision-service's own Service.
 
 | Tool | Inputs | What it returns |
 |---|---|---|
