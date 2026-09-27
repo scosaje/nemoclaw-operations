@@ -32,3 +32,6 @@ venv/
 
 # Logs
 *.log
+
+# Generated documentation PDFs — rebuild with ./scripts/build-docs-pdf.sh
+docs/pdf/*.pdf
